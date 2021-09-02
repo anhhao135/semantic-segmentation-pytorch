@@ -9,3 +9,6 @@ pretrained/
 
 ADE_val*.jpg
 ADE_val*.png
+
+directory/
+inference_output/

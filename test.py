@@ -17,6 +17,15 @@ from mit_semseg.lib.utils import as_numpy
 from PIL import Image
 from tqdm import tqdm
 from mit_semseg.config import cfg
+import ntpath
+
+
+
+outputDir = "inference_output"
+
+if not os.path.isdir(outputDir):
+    os.mkdir(outputDir)
+
 
 colors = loadmat('data/color150.mat')['colors']
 names = {}
@@ -26,6 +35,9 @@ with open('data/object150_info.csv') as f:
     for row in reader:
         names[int(row[0])] = row[5].split(";")[0]
 
+def path_leaf(path):
+    head, tail = ntpath.split(path)
+    return tail or ntpath.basename(head)
 
 def visualize_result(data, pred, cfg):
     (img, info) = data
@@ -45,11 +57,17 @@ def visualize_result(data, pred, cfg):
     pred_color = colorEncode(pred, colors).astype(np.uint8)
 
     # aggregate images and save
-    im_vis = np.concatenate((img, pred_color), axis=1)
+    im_vis = pred_color
 
     img_name = info.split('/')[-1]
-    Image.fromarray(im_vis).save(
-        os.path.join(cfg.TEST.result, img_name.replace('.jpg', '.png')))
+    img_name = path_leaf(img_name)
+
+    savableIMG = Image.fromarray(im_vis)
+
+    savableIMG.save(os.path.join(outputDir, img_name.replace('.jpg', '.png')))
+
+    
+
 
 
 def test(segmentation_module, loader, gpu):
